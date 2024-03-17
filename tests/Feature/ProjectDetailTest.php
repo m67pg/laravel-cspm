@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -212,5 +214,64 @@ class ProjectDetailTest extends Login
             ->assertInvalid([
                 'sort_order' => __('validation.max.numeric', ['attribute' => ProjectDetailTest::ATTRIBUTES['sort_order'], 'max' => 255]),
             ]);
+    }
+
+    /**
+     * 新規登録する時に「アップロードファイル」のファイルサイズが最大値を超えたときのテスト
+     */
+    public function test_create_upload_file_max(): void
+    {
+        // ログイン
+        $this->login_postJson();
+        //$this->login_create();
+
+        // storage/framework/testing/disks/upload_files
+        Storage::fake('upload_files');
+        $file = UploadedFile::fake()->create('upload_file_max.pdf', 1025);
+
+        $this->response = $this->postJson(
+            '/api/project/1/project_detail',
+            [
+                'name' => '名前',
+                'message' => 'メッセージ',
+                'upload_file' => $file,
+                'sort_order' => 9,
+            ]
+        );
+        // HTTP422
+        $this->response
+            ->assertUnprocessable()
+            ->assertJson([
+                'message' => __('validation.max.file', ['attribute' => ProjectDetailTest::ATTRIBUTES['upload_file'], 'max' => 1024]),
+            ])
+            ->assertInvalid([
+                'upload_file' => __('validation.max.file', ['attribute' => ProjectDetailTest::ATTRIBUTES['upload_file'], 'max' => 1024]),
+            ]);
+    }
+
+    /**
+     * 新規登録する時にファイルをアップロードするテスト
+     */
+    public function test_create_upload_file(): void
+    {
+        // ログイン
+        $this->login_postJson();
+        //$this->login_create();
+
+        // storage/framework/testing/disks/upload_files
+        Storage::fake('upload_files');
+        $file = UploadedFile::fake()->create('upload_file.pdf', 1024);
+
+        $this->response = $this->postJson(
+            '/api/project/1/project_detail',
+            [
+                'name' => '名前',
+                'message' => 'メッセージ',
+                'upload_file' => $file,
+                'sort_order' => 9,
+            ]
+        );
+        // HTTP200
+        $this->response->assertOk();
     }
 }
