@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://cspm.fun', 'https://www.cspm.fun', 'https://wp.cspm.fun'],
 
     'allowed_origins_patterns' => [],
 
