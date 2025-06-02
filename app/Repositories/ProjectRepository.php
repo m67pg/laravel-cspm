@@ -73,8 +73,6 @@ class ProjectRepository extends BaseRepository
                                        ->from('project_progresses')
                                        ->join('progresses', 'project_progresses.progress_id', '=', 'progresses.id')
                                        ->whereRaw('progresses.display = 1')
-                                       ->groupBy('project_progresses.project_id')
-                                       ->groupBy('project_progresses.progress_id')
                                        ->toSql();
 
             // プロジェクト毎の最新の進捗と入力した進捗で検索
